@@ -61,12 +61,17 @@ class Context_HMM:
             
             # Creates a new entry if the element si unknown
             if elem not in self.model:
-                self.model[elem] = [[a] for a in after]    
+                # self.model[elem] = {}
+                self.model[elem] = [{} for a in after]
             
             # Adds the element "after-context" to the existing entry
-            else:
-                for i,a in enumerate(after):
-                        self.model[elem][i].append(a)
+            # else:
+            for i,a in enumerate(after):
+                    if a in self.model[elem][i]:
+                        self.model[elem][i][a] += 1
+                    else:
+                        self.model[elem][i][a] = 1
+                    # self.model[elem][i].append(a)
             
             
             
@@ -91,21 +96,23 @@ class Context_HMM:
         import random as rn
         choice_list = self.model[element][0]
         
-        # TODO: Sub hashtable to reduce time complexity of this crap
         # for each context element, get their corresponding "after-context" list
         for i,elem in enumerate(context[::-1]):
             cor = self.model[elem][i]
             
-            # Cross-compares UNIQUES context elements,
+            # Cross-compares compares context elements
             # then doubles their population on a match
-            for a in set(choice_list):
-                for b in set(cor):
+            for a,ca in choice_list.items():
+                for b,cb in cor.items():
                     if a==b:
-                        choice_list.append(a)
+                        choice_list[a] += cb
             
-                
-    
-        return rn.choice(choice_list)
+        
+        rn_choice = []
+        for elem,nb in choice_list.items():
+            for i in range(nb):
+                rn_choice.append(elem)
+        return rn.choice(rn_choice)
         
     def generate(self, length:int, start = None, splitter:str = ''):
         """
